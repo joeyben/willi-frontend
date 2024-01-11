@@ -36,7 +36,7 @@ jobs:
     - name: Deploy to DigitalOcean
       run: |
         ssh -tt -o StrictHostKeyChecking=no ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_IP_ADDRESS }} << EOF
-          cd /path/to/your/react/app/directory # Update this path to the actual path on your server
+          cd /var/www/html/frontend/willi-frontend/src # Update this path to the actual path on your server
           git pull origin main
           rm -rf node_modules
           rm -f package-lock.json
