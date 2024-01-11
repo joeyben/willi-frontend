@@ -1,4 +1,4 @@
-name: Deploy Frontend to DigitalOcean
+name: Deploy React App to DigitalOcean
 
 on:
   push:
@@ -21,24 +21,28 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.DIGITALOCEAN_IP_ADDRESS }} >> ~/.ssh/known_hosts
 
-    # Backend Deployment
+    # React App Deployment
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '20.9.0'
+        node-version: '20.9.0' # Ensure this is the version you need
 
-    - name: Install Backend Dependencies
+    - name: Install React App Dependencies
       run: npm install
+
+    - name: Build React App
+      run: npm run build
 
     - name: Deploy to DigitalOcean
       run: |
         ssh -tt -o StrictHostKeyChecking=no ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_IP_ADDRESS }} << EOF
-          cd /var/www/html/frontend/willi-frontend/src # Update this path to the actual path on your server
-          git pull origin master
+          cd /path/to/your/react/app/directory # Update this path to the actual path on your server
+          git pull origin main
           rm -rf node_modules
           rm -f package-lock.json
           npm install
-          pm2 restart willi || true # or your specific server restart command
+          npm run build
+          pm2 restart your-react-app-process || true # Update this with your actual pm2 process name
         EOF
       env:
         DIGITALOCEAN_SSH_USER: ${{ secrets.DIGITALOCEAN_SSH_USER }}
