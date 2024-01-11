@@ -1,0 +1,45 @@
+name: Deploy Frontend to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Set up SSH Key
+    - name: Setup SSH Keys
+      run: |
+        mkdir -p ~/.ssh/
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.DIGITALOCEAN_IP_ADDRESS }} >> ~/.ssh/known_hosts
+
+    # Backend Deployment
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20.9.0'
+
+    - name: Install Backend Dependencies
+      run: npm install
+
+    - name: Deploy to DigitalOcean
+      run: |
+        ssh -tt -o StrictHostKeyChecking=no ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_IP_ADDRESS }} << EOF
+          cd /var/www/html/frontend/willi-frontend/src # Update this path to the actual path on your server
+          git pull origin master
+          rm -rf node_modules
+          rm -f package-lock.json
+          npm install
+          pm2 restart willi || true # or your specific server restart command
+        EOF
+      env:
+        DIGITALOCEAN_SSH_USER: ${{ secrets.DIGITALOCEAN_SSH_USER }}
+        DIGITALOCEAN_IP_ADDRESS: ${{ secrets.DIGITALOCEAN_IP_ADDRESS }}
